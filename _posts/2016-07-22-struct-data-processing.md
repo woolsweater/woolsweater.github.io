@@ -29,14 +29,16 @@ _(Edited to remove side commentary.)_
 
 ## [My reply](https://stackoverflow.com/a/38535661)
 
-First, as matt suggested, make a nicer datatype. The language makes this super convenient with structs. We need each entry to have a date and a mood score. Easy-peasy.
+<sub>(Updated to current Swift.)</sub>
+
+First, make a nicer datatype. The language makes this super convenient with structs. We need each entry to have a date and a mood score. Easy-peasy.
 
     import Foundation
 
     struct JournalEntry {
-        let date: NSDate
+        let date: Date
         let score: Double
-    
+
         var isGoodDay: Bool { return self.score <= 3.0 }
     }
 
@@ -45,41 +47,41 @@ First, as matt suggested, make a nicer datatype. The language makes this super c
 Now we need to turn the raw list of tuples into a list of these structs. That's straightforward. Create a date parser, and use `map` to convert between the tuple type and the struct:
 
     typealias RawEntry = (String, Double)
-    func parseRawEntries<S: SequenceType where S.Generator.Element == RawEntry>
-                        (rawEntries: S)
-        -> [JournalEntry]
+    func parseRawEntries<S : Sequence>(_ rawEntries: S) -> [JournalEntry]
+        where S.Element == RawEntry
     {
-        let parser = NSDateFormatter()
+        let parser = DateFormatter()
         parser.dateFormat = "MM-dd-yyyy"
-        // Use guard and flatMap because dateFromString returns an Optional; 
+        // Use guard and compactMap because date(from:) returns an Optional.
+        // This drops malformed entries silently; because of that,
         // you might prefer to throw an error to indicate that the data are 
-        // incorrectly formatted
-        return rawEntries.flatMap { rawEntry in
-            guard let date = parser.dateFromString(rawEntry.0) else {
+        // bad.
+        return rawEntries.compactMap({ (rawEntry) in
+            guard let date = parser.date(from: rawEntry.0) else {
                 return nil
             }
             return JournalEntry(date: date, score: rawEntry.1)
-        }
+        })
     }
 
-After converting we'll need to go through the list testing two conditions: first, that days are "good" and then that pairs of good days are consecutive. We have that helper method in the data structure itself to test the former. Let's create another helper function for the consecutive part:
+After converting we'll need to go through the list testing two conditions: first, that days are "good" and then that pairs of good days are consecutive. We have that helper property in the data structure itself to test the former. Let's create another helper method for the consecutive part:
 
-    
-    /* N.B. for brevity this assumes first and second are already sorted! */
-    func entriesConsecutive(first: JournalEntry, _ second: JournalEntry) -> Bool {
-        let calendar = NSCalendar.currentCalendar()
-        let dayDiff = calendar.components(.Day,
-                                          fromDate: first.date,
-                                          toDate: second.date,
-                                          options: NSCalendarOptions(rawValue: 0))
-        return dayDiff.day == 1
+    /* N.B. for brevity this assumes the two are already sorted! */
+    extension JournalEntry {
+        func isConsecutive(with other: JournalEntry) -> Bool {
+            let calendar = Calendar.current
+            let dayDiff = calendar.dateComponents([.day],
+                                                  from: self.date,
+                                                  to: other.date)
+            return dayDiff.day == 1        
+        }
     }
 
 At each enumeration step, we'll have the current entry, but we also need either the previous or the next, so that we can test for consecutivity. We also obviously want to keep track of the streaks' counts as we find them. Let's make another datatype for that. (The reason for `lastEntry` rather than `nextEntry` will be clear in a moment.)
 
     struct Streak {
         let lastEntry: JournalEntry
-        let count: UInt
+        let count: Int
     }
 
 This is the fun part: iterating over the array, constructing `Streak`s. This can be done with a `for` loop. But consuming sequences by calculation and agglomeration on each new item is a known pattern. It's called "[folding][fold]"; Swift uses the alternate term `reduce()`.
@@ -88,7 +90,7 @@ Reducing a sequence into groups, or while keeping track of something, is also a 
 
 The `Streak` datatype from above will make the elements in the reduction: that's why it uses the _last_ entry. Each step, we will save the `JournalEntry` and inspect it on the next.
 
-For streaks, we only care about "good" days. Let's make life simple and `filter` the list right off the bat: `let goodDays = journal.filter { $0.isGoodDay }` We'll need the first entry so that there's something to compare to on the first step. This is also a chance to bail out if for some reason there _are_ no good days.
+For streaks, we only care about "good" days. Let's make life simple and `filter` the list right off the bat: `let goodDays = journal.filter({ $0.isGoodDay })` We'll need the first entry so that there's something to compare to on the first step. This is also a chance to bail out if for some reason there _are_ no good days.
 
     guard let firstEntry = goodDays.first else {
         return []
@@ -109,9 +111,8 @@ That first entry goes into a `Streak` object, which goes into the collection tha
                       (reduction: [Streak], entry: JournalEntry) in
                         // Get most recent Streak for inspection
                         let streak = reduction.last!    // ! We know this exists
-                
-                        let consecutive = entriesConsecutive(streak.lastEntry, 
-                                                             entry)
+            
+                        let consecutive = streak.lastEntry.isConsecutive(with: entry)
                         // If this is the same streak, increment the count by
                         // replacing the previous value.
                         // Otherwise add a new Streak with count 1.
@@ -130,21 +131,14 @@ Now, back at the top level, things are very simple. Raw data:
     
 Convert that into the relevant datatype, immediately sorting by date while we're at it.
 
-    let journal = parseRawEntries(rawEntries).sort { $0.date < $1.date }
+    let journal = parseRawEntries(rawEntries).sorted(by: { $0.date < $1.date })
     
 Calculate streaks:
 
     let streaks = findStreaks(in: journal)
 
-And the result you want is then `let bestStreakLen = streaks.map({ $0.count }).maxElement()`
-    
----
+And the result you want is then
 
-Small note: comparing `NSDate` using `<` like that requires a new function:
-
-    func <(lhs: NSDate, rhs: NSDate) -> Bool {
-        let earlier = lhs.earlierDate(rhs)
-        return earlier == lhs
-    }
+    let bestStreakLength = streaks.map({ $0.count }).max()
     
 [fold]:https://en.wikipedia.org/wiki/Fold_(higher-order_function)

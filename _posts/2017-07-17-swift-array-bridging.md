@@ -31,15 +31,14 @@ As for that piece; while externally a "value", `Swift.Array` actually has an int
 
 You can see basically the same behavior in a C struct with a field that's a reference to some allocated memory:
 
-```
-typedef struct _Array {
-    void * payload;
-} Array;
 
-Array c;
-c.payload = malloc( /* Whatever */ );
-Array d = c;
-```
+    typedef struct _Array {
+        void * payload;
+    } Array;
+
+    Array c;
+    c.payload = malloc( /* Whatever */ );
+    Array d = c;
 
 Assigning to `d` makes a copy of the _pointer_ to the storage, but there's only one chunk of allocated memory, which hasn't moved or been copied. (And to extend this backwards, you can "bridge" this to `NSArray` in the same way `Swift.Array` does: by providing an appropriate function that does the transformation.)
 
