@@ -1,5 +1,7 @@
 ---
 title: Dymanically create NSString containing emoji
+permalink: /soa/:title
+slug: dynamically-create-nsstring-emoji
 ---
 
 A question from [https://stackoverflow.com/q/38125210](https://stackoverflow.com/q/38125210), authored by [Iulian Onofrei](https://stackoverflow.com/users/865175/iulian-onofrei)

@@ -1,5 +1,7 @@
 ---
 title: How does Swift Array bridge to NSArray?
+permalink: /soa/:title
+slug: swift-array-bridging
 ---
 
 A question from [https://stackoverflow.com/q/45116205](https://stackoverflow.com/q/45116205), authored by [Mo Abdul-Hameed](https://stackoverflow.com/users/4763963/mo-abdul-hameed)

@@ -1,5 +1,7 @@
 ---
 title: Extend UIView with a strongly-typed tag
+permalink: /soa/:title
+slug: swift-view-tag
 ---
 
 A question from [https://stackoverflow.com/q/54135116](https://stackoverflow.com/q/54135116), authored by [Chewie The Chorkie](https://stackoverflow.com/users/586006/chewie-the-chorkie)

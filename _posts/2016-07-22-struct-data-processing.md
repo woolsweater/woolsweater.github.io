@@ -1,5 +1,7 @@
 ---
 title: Simple data processing with structs and functional methods
+permalink: /soa/:title
+slug: struct-data-processing
 ---
 
 A question from [https://stackoverflow.com/questions/38530847](https://stackoverflow.com/questions/38530847), authored by [Josh Lopez](https://stackoverflow.com/users/4462954/josh-lopez)

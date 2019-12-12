@@ -1,5 +1,7 @@
 ---
 title: How ObjC Blocks capture values
+permalink: /soa/:title
+slug: objc-block-capture
 ---
 
 A question from [https://stackoverflow.com/questions/17813870](https://stackoverflow.com/questions/17813870), authored by [iCanObjSeeSharp](https://stackoverflow.com/users/2570370/icanobjseesharp)
