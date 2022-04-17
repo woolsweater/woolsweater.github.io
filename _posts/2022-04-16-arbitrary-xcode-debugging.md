@@ -36,10 +36,10 @@ Exactly what I wanted!
 
 [tree-sitter]:https://tree-sitter.github.io/tree-sitter/
 
-[menu]:imgs/2022-04-16-menu.png
+[menu]:../assets/imgs/2022-04-16-menu.png
 
-[args]:imgs/2022-04-16-args.png
+[args]:../assets/imgs/2022-04-16-args.png
 
-[working-dir]:imgs/2022-04-16-working-dir.png
+[working-dir]:../assets/imgs/2022-04-16-working-dir.png
 
-[project-debug]:imgs/2022-04-16-project-debug.png
+[project-debug]:../assets/imgs/2022-04-16-project-debug.png
