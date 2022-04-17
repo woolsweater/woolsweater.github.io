@@ -1,11 +1,12 @@
 source "https://rubygems.org"
 
-# Theme (minima is the default)
-gem "minima", "~> 2.0"
+# Theme (this is the default theme)
+gem "minima", "~> 2.5"
 
-gem "github-pages", "~> 203", group: :jekyll_plugins
+# For GitHub Pages. To upgrade, run `bundle update github-pages`.
+gem "github-pages", group: :jekyll_plugins
 
-# Plugins
+# If you have any plugins, put them here!
 group :jekyll_plugins do
-  gem "jekyll-feed", "~> 0.6"
+  gem "jekyll-feed", "~> 0.12"
 end
