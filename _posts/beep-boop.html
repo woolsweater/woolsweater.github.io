@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+	<meta charset="utf-8"/>
+	<title>Debugging any old thing in Xcode</title>
+	<meta name="permalink" content="/posts/:title"/>
+	<meta name="slug" content="debug-any-thing-xcode"/>
+</head>
+<body>
+
+<p>I&#8217;ve been developing a <a href="https://tree-sitter.github.io/tree-sitter/">Tree-sitter</a> grammar for Swift<a href="#fn:1" id="fnref:1" title="see footnote" class="footnote"><sup>1</sup></a> so I can get nice syntax highlighting when working in Emacs. Tree-sitter is a parser generator system: you primarily describe the target language&#8217;s grammar in a JavaScript DSL, which is used to generate C code that in turn becomes a grammar binary, which is loaded dynamically like a plugin by the tree-sitter library.</p>
+
+<p>The process of development is very test-driven. I haven&#8217;t found it necessary to debug the generated code. There is a second level of &#8220;plugin&#8221;, however: for grammatical elements that cannot be described in the JS DSL you can supplement with your own C code. This is called an &#8220;external scanner&#8221;. Tree-sitter defines an API it uses to invoke your scanner, and provides one that your code can use in turn to query the current parse state. In the JS grammar you may declare a node as &#8220;external&#8221;, and it will be handled by this scanner.</p>
+
+<p>The documentation for Tree-sitter is well-written but somewhat vague about the circumstances when the scanner will be invoked. There&#8217;s also no detailed error reporting from the scanner: just success or failure. I have found that being able to step through my C in the debugger is crucial while working on the scanner.</p>
+
+<p>While I prefer not to use Xcode as a text editor, I think its debugging GUI is quite nice. So I really wanted to use it for this. But I don&#8217;t have an .xcodeproj; nor was I inclined to try to set one up for the Rust-based Tree-sitter project. (Or even to build it from scratch: I am happy using a prebuilt executable.) What I really wanted was just to somehow attach to the tree-sitter process, with the ability to set breakpoints in my scanner.c file. Well, turns out this not just possible, it&#8217;s easy!</p>
+
+<p>First, go to the Debug menu in Xcode, and select Debug Executable&#8230;</p>
+
+<figure>
+<img src="imgs/2022-04-16-menu.png" alt="Xcode Debug menu selecting the 'Debug Executable...' item" id="menu" />
+<figcaption>Xcode Debug menu selecting the &#8216;Debug Executable&#8230;&#8217; item</figcaption>
+</figure>
+
+<p>This presents an Open dialog for you to select the binary you want to attach to. (In my case I navigated to /usr/local/bin/tree-sitter20.) Then Xcode creates an .xcworkspace file hidden away in a temporary directory and shows the usual project navigator window for it. You can move the .xcworkspace to a more permanent location if you like.</p>
+
+<p>Use the Scheme editor to configure the working directory and arguments to be passed:</p>
+
+<p><img src="imgs/2022-04-16-args.png" alt="Xcode scheme editor, Arguments tab" id="args" />
+<img src="imgs/2022-04-16-working-dir.png" alt="Xcode scheme editor, Options tab" id="working-dir" /></p>
+
+<p>Now add the file you want to debug to the project, either via File &gt; Add Files&#8230; or by simply dragging it in. You can now set breakpoints wherever you like in the file. Or, if you don&#8217;t have a source file, you can use regular LLDB commands (<code>break set -n suspicious_function</code>) to set them.<a href="#fn:2" id="fnref:2" title="see footnote" class="footnote"><sup>2</sup></a></p>
+
+<p>Now run the project, and when a breakpoint is hit Xcode will drop into its normal debugging mode! The console and variables view will be at the bottom, with the execution state displayed in the editor window.</p>
+
+<figure>
+<img src="imgs/2022-04-16-project-debug.png" alt="Xcode project debugging view" id="project-debug" />
+<figcaption>Xcode project debugging view</figcaption>
+</figure>
+
+<p>Exactly what I was hoping for!</p>
+
+<div class="footnotes">
+<hr />
+<ol>
+
+<li id="fn:1">
+<p>https://gitlab.com/woolsweater/tree&#8211;sitter&#8211;swifter <a href="#fnref:1" title="return to body" class="reversefootnote">&#160;&#8617;&#xfe0e;</a></p>
+</li>
+
+<li id="fn:2">
+<p>Side note here: LLDB is very good at matching up the binary and the source file, but stepping through may behave strangely if the code was built with optimization, and variables may also have been removed. For best results you want an unoptimized build with debug symbols included (<code>-g</code> for C code). <a href="#fnref:2" title="return to body" class="reversefootnote">&#160;&#8617;&#xfe0e;</a></p>
+</li>
+
+</ol>
+</div>
+
+</body>
+</html>
+
