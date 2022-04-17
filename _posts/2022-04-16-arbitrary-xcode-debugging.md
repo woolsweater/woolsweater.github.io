@@ -31,6 +31,10 @@ Now run the project, and when a breakpoint is hit Xcode will drop into its norma
 
 Exactly what I wanted!
 
+**Addendum:** [Saagar Jha](https://saagarjha.com/) helpfully pointed out an alternative trick to me: with the brand-new `xcdebug` tool (from Xcode 13.3) you can initiate this debugging session from the command line instead. For my example, I would use `xcrun xcdebug -t -S /usr/local/bin/tree-sitter20 parse --debug-build test-input.swift`
+
+The `-S` flag, for "suspended", launches the debugger but immediately pauses the attached process, allowing  breakpoints to be set. `-t` creates a temporary workspace; or there is another flag that allows using an existing workspace. `xcdebug --help` for the details; there doesn't seem to be a man page.
+
 [^1]:https://gitlab.com/woolsweater/tree-sitter-swifter
 [^2]: Side note here: LLDB is very good at matching up the binary and the source file, but stepping through may behave strangely if the code was built with optimization, and variables may also have been removed. For best results you want an unoptimized build with debug symbols included (`-g` for C code).
 
